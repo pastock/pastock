@@ -17,7 +17,12 @@
     ],
     "require": {
         "php": "^7.3|^8.0",
-        "laravel-zero/framework": "^8.8"
+        "ext-json": "*",
+        "guzzlehttp/guzzle": "^7.3",
+        "illuminate/http": "^8",
+        "laravel-zero/framework": "^8.8",
+        "symfony/css-selector": "^5.3",
+        "symfony/dom-crawler": "^5.3"
     },
     "require-dev": {
         "mockery/mockery": "^1.4.3",
