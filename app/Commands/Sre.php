@@ -34,7 +34,24 @@ class Sre extends Command
         $data = Http::get($uri)->json('data');
 
         $data = collect($data)
-            ->sortByDesc(2)
+            ->reject(function($value) {
+                return $value[4] === '-';
+            })
+            ->map(function($value) {
+                $value[4] = str_replace(',', '', $value[4]);
+                $value[] = match (true) {
+                    $value[4] === '-' => '-',
+                    $value[4] <= 5 => '<info>★★★★★</info>',
+                    $value[4] <= 8 => '★★★★☆',
+                    $value[4] <= 10 => '★★★☆☆',
+                    $value[4] <= 12 => '★★☆☆☆',
+                    $value[4] <= 15 => '★☆☆☆☆',
+                    default => '-',
+                };
+
+                return $value;
+            })
+            ->sortBy(4)
             ->toArray();
 
         $this->table([
@@ -45,6 +62,7 @@ class Sre extends Command
             '本益比',
             '股價淨值比',
             '財報年/季',
+            '評價',
         ], $data);
 
         return 0;

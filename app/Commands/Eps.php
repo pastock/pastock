@@ -9,15 +9,12 @@ use Symfony\Component\DomCrawler\Crawler;
 
 class Eps extends Command
 {
-    protected $signature = 'eps {company}';
+    protected $signature = 'eps';
 
     protected $description = '查詢公司 EPS';
 
     public function handle(): int
     {
-        $company = $this->argument('company');
-
-
         $body = 'encodeURIComponent=1&step=1&firstin=1&TYPEK=sii&code=&year=105&season=01';
         parse_str($body, $data);
 
@@ -65,16 +62,5 @@ class Eps extends Command
         $this->table($header, $result);
 
         return 0;
-    }
-
-    private function toArray($stream): array
-    {
-        $result = [];
-
-        while (($data = fgetcsv($stream)) !== false) {
-            $result[] = $data;
-        }
-
-        return $result;
     }
 }
