@@ -2,58 +2,27 @@
 
 namespace App\Commands;
 
-use DOMNode;
-use Illuminate\Support\Facades\Http;
+use App\Crawler\EpsCrawler;
+use Carbon\Carbon;
 use LaravelZero\Framework\Commands\Command;
-use Symfony\Component\DomCrawler\Crawler;
 
 class Eps extends Command
 {
-    protected $signature = 'eps';
+    protected $signature = 'eps {quarter?} {year?}';
 
     protected $description = '查詢公司 EPS';
 
-    public function handle(): int
+    public function handle(EpsCrawler $eps): int
     {
-        $body = 'encodeURIComponent=1&step=1&firstin=1&TYPEK=sii&code=&year=105&season=01';
-        parse_str($body, $data);
+        $quarter = $this->argument('quarter');
+        $year = $this->argument('year');
 
-        $html = Http::asForm()
-            ->post('https://mops.twse.com.tw/mops/web/ajax_t163sb19', $data)
-            ->body();
+        $target = Carbon::now()->subQuarters(2);
 
-        $crawler = new Crawler($html);
+        $quarter = empty($season) ? $target->quarter : $quarter;
+        $year = empty($year) ? $target->year - 1911 : $year;
 
-        $filter = $crawler->filter('table.hasBorder > tr');
-
-        $result = [];
-
-        /** @var DOMNode $node */
-        foreach ($filter as $key => $node) {
-            $arr = [
-                @trim($node->childNodes[1]->textContent),
-                @trim($node->childNodes[3]->textContent),
-                @trim($node->childNodes[5]->textContent),
-                @trim($node->childNodes[7]->textContent),
-                @trim($node->childNodes[9]->textContent),
-                @trim($node->childNodes[11]->textContent),
-                @trim($node->childNodes[13]->textContent),
-                @trim($node->childNodes[15]->textContent),
-                @trim($node->childNodes[17]->textContent),
-            ];
-
-            if (empty($arr[4])) {
-                continue;
-            }
-
-            if ($key !== 0 && "公司代號" === $arr[0]) {
-                continue;
-            }
-
-            $result[] = $arr;
-        }
-
-        $result = collect($result)
+        $result = $eps($quarter, $year)
             ->sortByDesc(3)
             ->toArray();
 

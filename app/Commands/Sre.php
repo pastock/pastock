@@ -2,8 +2,9 @@
 
 namespace App\Commands;
 
+use App\Crawler\OverviewCrawler;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use LaravelZero\Framework\Commands\Command;
 
 class Sre extends Command
@@ -12,7 +13,7 @@ class Sre extends Command
 
     protected $description = '查詢歷年股利';
 
-    public function handle(): int
+    public function handle(OverviewCrawler $overview): int
     {
         $day = $this->argument('day');
         $month = $this->argument('month');
@@ -20,20 +21,11 @@ class Sre extends Command
 
         $now = Carbon::now();
 
-        $day = empty($day) ? $now->day : $day;
+        $day = empty($day) ? $now->day - 1: $day;
         $month = empty($month) ? $now->month : $month;
         $year = empty($year) ? $now->year : $year;
 
-        $uri = sprintf(
-            'https://www.twse.com.tw/exchangeReport/BWIBBU_d?response=json&date=%s%s%s&selectType=ALL',
-            $year,
-            $month,
-            $day,
-        );
-
-        $data = Http::get($uri)->json('data');
-
-        $data = collect($data)
+        $data = $overview($year, $month, $day)
             ->reject(function($value) {
                 return $value[4] === '-';
             })

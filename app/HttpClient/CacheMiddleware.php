@@ -9,7 +9,7 @@ use GuzzleHttp\Psr7\Utils;
 use Illuminate\Support\Facades\Cache;
 use Psr\Http\Message\RequestInterface;
 
-class CacheResponse
+class CacheMiddleware
 {
     /**
      * @var null
