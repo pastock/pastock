@@ -23,13 +23,18 @@ class ClientFactory
 
     public function __call($method, $parameters)
     {
-        return tap($this->noCache(), function (PendingRequest $request) {
+        return tap($this->noCached(), function (PendingRequest $request) {
             $request->withMiddleware($this->cacheMiddleware);
         })->{$method}(...$parameters);
     }
 
-    public function noCache(): PendingRequest
+    public function noCached(): PendingRequest
     {
         return (new Factory())->beforeSending($this->delaySending);
+    }
+
+    public function cached(): PendingRequest
+    {
+        return (new Factory())->withMiddleware($this->cacheMiddleware);
     }
 }

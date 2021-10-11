@@ -4,4 +4,4 @@
 
 * https://openapi.twse.com.tw/
 * https://github.com/mlouielu/twstock
-  https://openapi.twse.com.tw/v1/opendata/t187ap14_L
+* https://openapi.twse.com.tw/v1/opendata/t187ap14_L
