@@ -21,15 +21,15 @@ class Sre extends Command
 
         $now = Carbon::now();
 
-        $day = empty($day) ? $now->day - 1: $day;
+        $day = empty($day) ? $now->day - 1 : $day;
         $month = empty($month) ? $now->month : $month;
         $year = empty($year) ? $now->year : $year;
 
         $data = $overview($year, $month, $day)
-            ->reject(function($value) {
+            ->reject(function ($value) {
                 return $value[4] === '-';
             })
-            ->map(function($value) {
+            ->map(function ($value) {
                 $value[4] = str_replace(',', '', $value[4]);
                 $value[] = match (true) {
                     $value[4] === '-' => '-',

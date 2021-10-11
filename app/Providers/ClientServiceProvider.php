@@ -14,11 +14,11 @@ class ClientServiceProvider extends ServiceProvider
     {
         $this->app->singleton(ClientFactory::class);
 
-        $this->app->singleton(DelaySending::class, function() {
+        $this->app->singleton(DelaySending::class, function () {
             return new DelaySending(Cache::store('array'));
         });
 
-        $this->app->singleton(CacheMiddleware::class, function() {
+        $this->app->singleton(CacheMiddleware::class, function () {
             return new CacheMiddleware();
         });
     }
