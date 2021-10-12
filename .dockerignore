@@ -1,0 +1,9 @@
+# Docker files
+.dockerignore
+Dockerfile
+
+# Git files
+.git
+
+# Build files
+vendor
