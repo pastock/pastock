@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "59c0c70ff1c0e40eb22ed8c14a6dbebc",
+    "content-hash": "a4d9e10c9150ee271c182bb3d5ea0453",
     "packages": [
         {
             "name": "brick/math",
@@ -1886,6 +1886,51 @@
                 }
             ],
             "time": "2021-09-25T08:23:19+00:00"
+        },
+        {
+            "name": "mileschou/imgecho",
+            "version": "v0.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/MilesChou/imgecho.git",
+                "reference": "aeb638a8940d756ec4b7131fcc98e73fa9a4d077"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/MilesChou/imgecho/zipball/aeb638a8940d756ec4b7131fcc98e73fa9a4d077",
+                "reference": "aeb638a8940d756ec4b7131fcc98e73fa9a4d077",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.1 | ^8.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^7.5 | ^8.5 | ^9.3",
+                "squizlabs/php_codesniffer": "^3.6"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "MilesChou\\ImgEcho\\": "src/ImgEcho"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "MilesChou",
+                    "email": "jangconan@gmail.com",
+                    "role": "Maintainer"
+                }
+            ],
+            "description": "Inline Images Protocol implementation for PHP.",
+            "support": {
+                "issues": "https://github.com/MilesChou/imgecho/issues",
+                "source": "https://github.com/MilesChou/imgecho/tree/v0.1.0"
+            },
+            "time": "2021-10-12T15:37:39+00:00"
         },
         {
             "name": "nesbot/carbon",

@@ -8,10 +8,11 @@ use Carbon\Carbon;
 use GuzzleHttp\Psr7\HttpFactory;
 use Illuminate\Support\Arr;
 use LaravelZero\Framework\Commands\Command;
+use MilesChou\ImgEcho\ImgEcho;
 
 class Stock extends Command
 {
-    protected $signature = 'stock {stock} {month?} {year?} {--graph}';
+    protected $signature = 'stock {stock} {month?} {year?} {--chart}';
 
     protected $description = '查詢個股股價';
 
@@ -40,7 +41,7 @@ class Stock extends Command
             '成交筆數',
         ], $data->toArray());
 
-        if ($this->option('graph')) {
+        if ($this->option('chart')) {
             // See http://coopermaa2nd.blogspot.com/2011/01/google-chart-api.html
             $parameter = [
                 'cht' => 'lc',
@@ -60,10 +61,14 @@ class Stock extends Command
 
             $this->newLine();
 
-            // See https://iterm2.com/documentation-images.html
-            $image = "\033]1337;File=inline=1;width=100%:" . base64_encode($b) . "\007";
+            $this->line(
+                (new ImgEcho())
+                    ->withWidth('100%')
+                    ->withImage($b)
+                    ->build()
+            );
 
-            $this->line($image);
+            $this->newLine();
 
             return 0;
         }

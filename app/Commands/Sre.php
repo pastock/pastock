@@ -9,12 +9,13 @@ use GuzzleHttp\Psr7\HttpFactory;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use LaravelZero\Framework\Commands\Command;
+use MilesChou\ImgEcho\ImgEcho;
 
 class Sre extends Command
 {
     protected $signature = 'sre {day?} {month?} {year?}
                                 {--take=10}
-                                {--graph}';
+                                {--chart}';
 
     protected $description = '查詢歷年股利';
 
@@ -62,7 +63,7 @@ class Sre extends Command
             '評價',
         ], $data->toArray());
 
-        if ($this->option('graph')) {
+        if ($this->option('chart')) {
             // See http://coopermaa2nd.blogspot.com/2011/01/google-chart-api.html
             $parameter = [
                 'cht' => 'bvg',
@@ -82,10 +83,14 @@ class Sre extends Command
 
             $this->newLine();
 
-            // See https://iterm2.com/documentation-images.html
-            $image = "\033]1337;File=inline=1;width=80%:" . base64_encode($b) . "\007";
+            $this->line(
+                (new ImgEcho())
+                    ->withWidth('80%')
+                    ->withImage($b)
+                    ->build()
+            );
 
-            $this->line($image);
+            $this->newLine();
 
             return 0;
         }
