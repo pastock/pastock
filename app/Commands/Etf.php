@@ -7,24 +7,29 @@ use LaravelZero\Framework\Commands\Command;
 
 class Etf extends Command
 {
-    protected $signature = 'etf {code*}';
+    protected $signature = 'etf {code} {intersect?*}';
 
     protected $description = '查詢 ETF ';
 
     public function handle(): int
     {
         $code = $this->argument('code');
+        $intersect = $this->argument('intersect');
+
+        $etf = Http::asForm()->post('https://www.cmoney.tw/etf/ashx/e210.ashx', [
+            'action' => 'GetShareholdingDetails',
+            'stockId' => $code,
+        ])->json('Data');
 
         // curl -X POST -d 'action=GetShareholdingDetails&stockId=0050' -v https://www.cmoney.tw/etf/ashx/e210.ashx
-
-        $data = collect($code)->flip()->map(function ($_, $code) {
+        $intersect = collect($intersect)->flip()->map(function ($_, $code) {
             return Http::asForm()->post('https://www.cmoney.tw/etf/ashx/e210.ashx', [
                 'action' => 'GetShareholdingDetails',
                 'stockId' => $code,
             ])->json('Data');
         });
 
-        $data = $data->reduce(function (array $c, $v) {
+        $data = $intersect->reduce(function (array $c, $v) {
             if (empty($c)) {
                 return $v;
             }
@@ -32,7 +37,7 @@ class Etf extends Command
             return array_uintersect($c, $v, function ($c1, $c2) {
                 return strcmp($c1['CommKey'], $c2['CommKey']);
             });
-        }, []);
+        }, $etf);
 
         $this->table([
             'stock',
