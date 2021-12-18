@@ -2,16 +2,21 @@
 
 namespace App\Commands;
 
+use App\Crawler\StockOwnerCrawler;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use LaravelZero\Framework\Commands\Command;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class Etf extends Command
 {
-    protected $signature = 'etf {code} {intersect?*}';
+    protected $signature = 'etf {code} {intersect?*}
+                                {--with-mof : 過濾財政部}
+                                ';
 
     protected $description = '查詢 ETF ';
 
-    public function handle(): int
+    public function handle(StockOwnerCrawler $ownerCrawler): int
     {
         $code = $this->argument('code');
         $intersect = $this->argument('intersect');
@@ -39,20 +44,42 @@ class Etf extends Command
             });
         }, $etf);
 
+        $data = collect($data)->map(function ($v) {
+            return Arr::only($v, [
+                'CommKey',
+                'CommName',
+                'Type',
+            ]);
+        });
+
+        if ($this->option('with-mof')) {
+            $data = $data->filter(function ($v) use ($ownerCrawler) {
+                $owner = $ownerCrawler($v['CommKey']);
+
+                $this->line(
+                    "檢查 {$v['CommKey']} {$v['CommName']} 是否有財政部持股",
+                    null,
+                    OutputInterface::VERBOSITY_VERY_VERBOSE
+                );
+
+                foreach ($owner as $item) {
+                    if ($item['姓名'] === '財政部') {
+                        $this->info("{$v['CommKey']} {$v['CommName']} 有財政部持股", OutputInterface::VERBOSITY_DEBUG);
+                        return true;
+                    }
+                }
+
+                $this->line("{$v['CommKey']} {$v['CommName']} 沒有財政部持股", null, OutputInterface::VERBOSITY_DEBUG);
+
+                return false;
+            });
+        }
+
         $this->table([
             'stock',
             'name',
             'type',
-        ], collect($data)->map(function ($v) {
-            unset($v['Date']);
-            unset($v['Value']);
-            unset($v['Unit']);
-            unset($v['Amount']);
-            unset($v['Currency']);
-            unset($v['Weights']);
-
-            return $v;
-        }));
+        ], $data);
 
         return 0;
     }

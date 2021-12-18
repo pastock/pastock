@@ -17,8 +17,10 @@ class StockOwnerCrawler
         $this->client = $client;
     }
 
-    public function __invoke(): Collection
+    public function __invoke(?string $stock = null): Collection
     {
-        return $this->client->get('https://openapi.twse.com.tw/v1/opendata/opendata/t187ap11_L')->collect();
+        $collection = $this->client->get('https://openapi.twse.com.tw/v1/opendata/opendata/t187ap11_L')->collect();
+
+        return $collection->where('公司代號', $stock)->values();
     }
 }

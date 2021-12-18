@@ -16,18 +16,15 @@ class StockOwner extends Command
     {
         $stock = $this->argument('stock');
 
-        $data = $crawler();
+        $data = $crawler($stock);
 
-        $data = $data->where('公司代號', $stock)
-            ->values()
-            ->map(function (array $v) {
-                return Arr::only($v, [
-                    '職稱',
-                    '姓名',
-                    '目前持股',
-                ]);
-            });
-
+        $data = $data->map(function (array $v) {
+            return Arr::only($v, [
+                '職稱',
+                '姓名',
+                '目前持股',
+            ]);
+        });
 
         $this->table([
             '職稱',
