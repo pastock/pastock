@@ -1,5 +1,7 @@
 # Pastock
 
+做好玩的，有需求可以發 [issue](https://github.com/pastock/pastock/issues/new)，我有空再來寫。
+
 ## ETF 查詢與交集比對功能
 
 使用下面指令可以查 ETF 的股票權重比例，如 0050：
