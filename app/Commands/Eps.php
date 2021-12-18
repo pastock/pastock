@@ -4,15 +4,13 @@ namespace App\Commands;
 
 use App\Crawler\EpsCrawler;
 use Carbon\Carbon;
-use GuzzleHttp\Client;
-use GuzzleHttp\Psr7\HttpFactory;
 use LaravelZero\Framework\Commands\Command;
-use MilesChou\ImgEcho\ImgEcho;
-use Pachart\Drivers\GoogleChart\Bar;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class Eps extends Command
 {
-    protected $signature = 'eps {quarter?} {year?}
+    protected $signature = 'eps {stock} {quarter?} {year?}
+                                {--group-year}
                                 {--chart}
                                 {--take=10}
                                 ';
@@ -21,48 +19,49 @@ class Eps extends Command
 
     public function handle(EpsCrawler $eps): int
     {
-        $quarter = $this->argument('quarter');
-        $year = $this->argument('year');
-
+        $stock = $this->argument('stock');
         $target = Carbon::now()->subQuarters(2);
 
-        $quarter = empty($season) ? $target->quarter : $quarter;
-        $year = empty($year) ? $target->year - 1911 : $year;
+        if ($this->option('group-year')) {
+            $result = $this->getEpsGroupYears($eps, $target, $stock);
+        } else {
+            $result = $this->getEps($eps, $target, $stock);
+        }
 
-        $result = $eps($quarter, $year)
-            ->sortByDesc(3)
-            ->take($this->option('take'))
-            ->toArray();
+        dd($result);
 
         $header = array_shift($result);
 
         $this->table($header, $result);
 
-        if ($this->option('chart')) {
-            $data = collect($result);
+        return 0;
+    }
 
-            $line = new Bar(new Client(), new HttpFactory());
-            $line->size(700, 400)
-                ->setData($data->map(fn($v) => $v[3]))
-                ->setXLabel($data->map(fn($v) => $v[0]))
-                ->setXt()
-                ->range(0, 100)
-                ->setGrid(10, 10);
+    private function getEps(EpsCrawler $eps, Carbon $target, string $stock)
+    {
+        return $eps($target->quarter, $target->year - 1911)
+            ->first(function ($value) use ($stock) {
+                return $value[0] === $stock;
+            });
+    }
 
-            $this->newLine();
+    private function getEpsGroupYears(EpsCrawler $eps, Carbon $target, string $stock)
+    {
+        $data = collect();
+        while (true) {
+            $result = $this->getEps($eps, $target, $stock);
 
-            $this->line(
-                (new ImgEcho())
-                    ->withWidth('80%')
-                    ->withImage($line->binary())
-                    ->build()
-            );
+            if (null === $result) {
+                break;
+            }
 
-            $this->newLine();
+            $this->line("查詢 {$target->year} 年 Q{$target->quarter}", null, OutputInterface::VERBOSITY_DEBUG);
 
-            return 0;
+            $data->push($result);
+
+            $target->subQuarter();
         }
 
-        return 0;
+        return $data;
     }
 }

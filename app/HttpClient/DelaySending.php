@@ -2,7 +2,9 @@
 
 namespace App\HttpClient;
 
+use Closure;
 use Illuminate\Contracts\Cache\Repository;
+use Psr\Http\Message\RequestInterface;
 
 /**
  * 因呼叫 twse 的 API 太頻繁的話會 ban IP，所以這裡做了硬幹阻擋的小程式
@@ -27,16 +29,20 @@ class DelaySending
         $this->retry = $retry;
     }
 
-    public function __invoke()
+    public function __invoke(callable $handler): Closure
     {
-        while ($this->cache->get('lock') >= $this->retry) {
-            sleep(1);
-        };
+        return function (RequestInterface $request, array $options) use ($handler) {
+            while ($this->cache->get('lock') >= $this->retry) {
+                sleep(1);
+            };
 
-        if ($this->cache->has('lock')) {
-            $this->cache->increment('lock');
-        } else {
-            $this->cache->put('lock', 1, $this->delay);
-        }
+            if ($this->cache->has('lock')) {
+                $this->cache->increment('lock');
+            } else {
+                $this->cache->put('lock', 1, $this->delay);
+            }
+
+            return $handler($request, $options);
+        };
     }
 }

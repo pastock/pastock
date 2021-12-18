@@ -2,6 +2,30 @@
 
 做好玩的，有需求可以發 [issue](https://github.com/pastock/pastock/issues/new)，我有空再來寫。
 
+* [名詞解釋](docs/terms.md)
+
+## 股價查詢
+
+使用下面指令可以查個股的當月股價，如 2330：
+
+```
+php pastock stock 2330
+```
+
+可以指定月份或年份，比方說疫情大跌那時的股價：
+
+```
+php pastock stock 2330 3 2020
+```
+
+最後，可以用 `--group-year` 來將每一年的股價全部統計起來：
+
+> 因為 API 載資料會很慢，可以用 `-vvv` 來看進度
+
+```
+php pastock stock 2330 --group-year
+```
+
 ## ETF 查詢與交集比對功能
 
 使用下面指令可以查 ETF 的股票權重比例，如 0050：
