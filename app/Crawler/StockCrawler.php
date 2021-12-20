@@ -19,7 +19,7 @@ class StockCrawler
         $this->client = $client;
     }
 
-    public function __invoke(string $stock, string $year, string $month, bool $noCache): Collection
+    public function __invoke(string $stock, string $year, string $month, bool $noCache = false): Collection
     {
         $uri = sprintf(
             'https://www.twse.com.tw/exchangeReport/STOCK_DAY?response=json&date=%s%s01&stockNo=%s',

@@ -17,7 +17,7 @@ class StockPrice extends Command
     protected $signature = 'build:stock:price
                                 {stock?*}
                                 {--output=build : 輸出目錄}
-                                {--full-limit=1 : 執行完全下載的次數上限}';
+                                {--full-limit=10 : 執行完全下載的次數上限}';
 
     protected $description = '建置所有股票的價錢';
 
@@ -61,6 +61,9 @@ class StockPrice extends Command
             $isNotFound = $cache->status() === 404;
             if ($isNotFound) {
                 $data = $this->full($code, $name);
+
+                $this->limit--;
+                $this->info('剩下 ' . $this->limit . ' 次', OutputInterface::VERBOSITY_VERY_VERBOSE);
             } else {
                 $data = $cache->collect()->reject(function ($item) {
                     return $item['year'] === $this->now->year && $item['month'] === $this->now->month;
@@ -74,11 +77,8 @@ class StockPrice extends Command
             $this->info('寫入檔案：' . $path, OutputInterface::VERBOSITY_VERBOSE);
             File::put($path, $data->toJson());
 
-            $this->limit--;
 
-            $this->info('剩下 ' . $this->limit . ' 次', OutputInterface::VERBOSITY_VERY_VERBOSE);
-
-            if ($isNotFound && 0 === $this->limit) {
+            if ($isNotFound && (0 === $this->limit)) {
                 return false;
             }
 
