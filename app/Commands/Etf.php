@@ -11,6 +11,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 class Etf extends Command
 {
     protected $signature = 'etf {code} {intersect?*}
+                                {--stock : 只顯示股票}
+                                {--compact : 只顯示代碼}
                                 {--with-mof : 過濾財政部}
                                 ';
 
@@ -52,6 +54,12 @@ class Etf extends Command
             ]);
         });
 
+        if ($this->option('stock')) {
+            $data = $data->filter(function ($v) {
+                return $v['Type'] === '股票';
+            });
+        }
+
         if ($this->option('with-mof')) {
             $data = $data->filter(function ($v) use ($ownerCrawler) {
                 $owner = $ownerCrawler($v['CommKey']);
@@ -73,6 +81,14 @@ class Etf extends Command
 
                 return false;
             });
+        }
+
+        if ($this->option('compact')) {
+            foreach ($data as $v) {
+                $this->line($v['CommKey']);
+            }
+
+            return 0;
         }
 
         $this->table([

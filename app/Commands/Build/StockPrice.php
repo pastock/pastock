@@ -15,12 +15,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 class StockPrice extends Command
 {
     protected $signature = 'build:stock:price
-                                {stock?}
-                                {--output=build : 輸出目錄}';
+                                {stock?*}
+                                {--output=build : 輸出目錄}
+                                {--full-limit=1 : 執行完全下載的次數上限}';
 
     protected $description = '建置所有股票的價錢';
 
     private Carbon $now;
+
+    private int $limit;
 
     private StockCrawler $price;
 
@@ -28,6 +31,7 @@ class StockPrice extends Command
     {
         $this->now = Carbon::now();
         $this->price = $price;
+        $this->limit = (int)$this->option('full-limit');
 
         $this->info('抓取所有上市股票的清單 ...', OutputInterface::VERBOSITY_VERBOSE);
 
@@ -42,7 +46,7 @@ class StockPrice extends Command
 
         if ($stock = $this->argument('stock')) {
             $list = $list->filter(function ($item) use ($stock) {
-                return $item['code'] === $stock;
+                return in_array($item['code'], $stock, true);
             });
         }
 
@@ -54,7 +58,8 @@ class StockPrice extends Command
 
             $cache = Http::get("https://pastock.github.io/stock/{$code}.json");
 
-            if ($cache->status() === 404) {
+            $isNotFound = $cache->status() === 404;
+            if ($isNotFound) {
                 $data = $this->full($code, $name);
             } else {
                 $data = $cache->collect()->reject(function ($item) {
@@ -68,6 +73,16 @@ class StockPrice extends Command
 
             $this->info('寫入檔案：' . $path, OutputInterface::VERBOSITY_VERBOSE);
             File::put($path, $data->toJson());
+
+            $this->limit--;
+
+            $this->info('剩下 ' . $this->limit . ' 次', OutputInterface::VERBOSITY_VERY_VERBOSE);
+
+            if ($isNotFound && 0 === $this->limit) {
+                return false;
+            }
+
+            return true;
         });
 
         return 0;
