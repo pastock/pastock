@@ -17,9 +17,15 @@ class StockBasicCrawler
         $this->client = $client;
     }
 
-    public function __invoke(): Collection
+    public function __invoke($noCache = false): Collection
     {
-        return $this->client->get('https://openapi.twse.com.tw/v1/opendata/t187ap03_L')
+        if ($noCache) {
+            $client = $this->client->noCached();
+        } else {
+            $client = $this->client;
+        }
+
+        return $client->get('https://openapi.twse.com.tw/v1/opendata/t187ap03_L')
             ->collect()
             ->map(function ($item) {
                 return [
