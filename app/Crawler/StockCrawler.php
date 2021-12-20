@@ -44,9 +44,9 @@ class StockCrawler
                 return [
                     'year' => (int)$year,
                     'month' => (int)$month,
-                    'day' =>(int)$day,
+                    'day' => (int)$day,
                     'volume' => (int)str_replace(',', '', $record[1]),
-                    'value' =>(int)str_replace(',', '', $record[2]),
+                    'value' => (int)str_replace(',', '', $record[2]),
                     'opening_price' => (float)$record[3],
                     'highest_price' => (float)$record[4],
                     'lowest_price' => (float)$record[5],
