@@ -38,35 +38,36 @@ class StockPrice extends Command
         // 固定抓最新的清單
         $list = $basic(true);
 
+        $this->info('上市股票總共有 ' . $list->count() . ' 家', OutputInterface::VERBOSITY_VERBOSE);
+
         if ($stock = $this->argument('stock')) {
             $list = $list->filter(function ($item) use ($stock) {
                 return $item['code'] === $stock;
             });
         }
 
-        $list->each(function ($item) use ($price, $output) {
+        $list->each(function ($item, $key) use ($price, $output) {
             [$code, $name] = array_values($item);
-            $this->info("下載 {$code} {$name} 的資料 ...", OutputInterface::VERBOSITY_VERBOSE);
+            $this->info("[$key] 下載 {$code} {$name} 的資料 ...", OutputInterface::VERBOSITY_VERBOSE);
+
+            $current = $this->get($code, $name, $this->now->year, $this->now->month, true);
 
             $cache = Http::get("https://pastock.github.io/stock/{$code}.json");
 
             if ($cache->status() === 404) {
-                $json = $this->full($code, $name)->toJson();
+                $data = $this->full($code, $name);
             } else {
                 $data = $cache->collect()->reject(function ($item) {
                     return $item['year'] === $this->now->year && $item['month'] === $this->now->month;
                 });
-
-                $current = $this->get($code, $name, $this->now->year, $this->now->month);
-                $current->reverse()->each(fn($v) => $data->push($v));
-
-                $json = $data->toJson();
             }
+
+            $current->reverse()->each(fn($v) => $data->push($v));
 
             $path = $output . '/' . $code . '.json';
 
             $this->info('寫入檔案：' . $path, OutputInterface::VERBOSITY_VERBOSE);
-            File::put($path, $json);
+            File::put($path, $data->toJson());
         });
 
         return 0;
@@ -93,15 +94,15 @@ class StockPrice extends Command
         return $data;
     }
 
-    private function get(mixed $code, mixed $name, int $year, int $month): Collection
+    private function get(mixed $code, mixed $name, int $year, int $month, bool $noCache = false): Collection
     {
         $this->line(
-            "下載 {$code} {$name} {$year} 年 {$month} 月資料",
+            "> 下載 {$code} {$name} {$year} 年 {$month} 月資料",
             null,
             OutputInterface::VERBOSITY_VERY_VERBOSE
         );
 
-        $result = ($this->price)($code, $year, $month);
+        $result = ($this->price)($code, $year, $month, $noCache);
 
         if ($result->isEmpty()) {
             throw new RuntimeException("股票代碼 $code 無法下載");

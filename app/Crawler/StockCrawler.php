@@ -19,24 +19,22 @@ class StockCrawler
         $this->client = $client;
     }
 
-    /**
-     * @param string $stock
-     * @param string $year
-     * @param string $month
-     * @param string $day 這個參數似乎沒有用，但還是開放可以輸入
-     * @return Collection
-     */
-    public function __invoke(string $stock, string $year, string $month, string $day = '01'): Collection
+    public function __invoke(string $stock, string $year, string $month, bool $noCache): Collection
     {
         $uri = sprintf(
-            'https://www.twse.com.tw/exchangeReport/STOCK_DAY?response=json&date=%s%s%s&stockNo=%s',
+            'https://www.twse.com.tw/exchangeReport/STOCK_DAY?response=json&date=%s%s01&stockNo=%s',
             $year,
             Str::padLeft($month, 2, '0'),
-            Str::padLeft($day, 2, '0'),
             $stock
         );
 
-        return $this->client->get($uri)
+        if ($noCache) {
+            $client = $this->client->noCached();
+        } else {
+            $client = $this->client;
+        }
+
+        return $client->get($uri)
             ->collect('data')
             ->map(function (array $record) {
                 [$year, $month, $day] = explode('/', $record[0]);
