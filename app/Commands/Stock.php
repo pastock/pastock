@@ -19,9 +19,11 @@ class Stock extends Command
                                 {stock : 股票代號}
                                 {month? : 指定月份，預設本月}
                                 {year? : 指定月份，預設本年}
+                                {--all : 查全部}
                                 {--group-year : 以年統計到所有資料}
                                 {--unit=1 : 設定成交股數、成交金額、成交筆數的基本單位}
                                 {--chart}
+                                {--json : 輸出 JSON 格式}
                                 ';
 
     protected $description = '查詢個股股價';
@@ -37,7 +39,7 @@ class Stock extends Command
         $month = empty($month) ? $now->month : $month;
         $year = empty($year) ? $now->year : $year;
 
-        if ($this->option('group-year')) {
+        if ($this->option('all')) {
             $data = collect();
 
             $time = Carbon::createFromDate($year, $month);
@@ -55,26 +57,34 @@ class Stock extends Command
                 $time->subMonth();
             }
 
-            $data = $data->groupBy('year')->map(function (Collection $year) {
-                $first = $year->pluck('opening_price')->first();
-                $last = $year->pluck('closing_price')->last();
+            if ($this->option('group-year')) {
+                $data = $data->groupBy('year')->map(function (Collection $year) {
+                    $first = $year->pluck('opening_price')->first();
+                    $last = $year->pluck('closing_price')->last();
 
-                return [
-                    'year' => $year->pluck('year')->first(),
-                    'month' => '*',
-                    'day' => '*',
-                    'volume' => $year->pluck('volume')->sum(),
-                    'value' => $year->pluck('value')->sum(),
-                    'opening_price' => $first,
-                    'highest_price' => $year->pluck('highest_price')->max(),
-                    'lowest_price' => $year->pluck('lowest_price')->min(),
-                    'closing_price' => $last,
-                    'change' => $last - $first,
-                    'transaction' => $year->pluck('transaction')->sum(),
-                ];
-            });
+                    return [
+                        'year' => $year->pluck('year')->first(),
+                        'month' => '*',
+                        'day' => '*',
+                        'volume' => $year->pluck('volume')->sum(),
+                        'value' => $year->pluck('value')->sum(),
+                        'opening_price' => $first,
+                        'highest_price' => $year->pluck('highest_price')->max(),
+                        'lowest_price' => $year->pluck('lowest_price')->min(),
+                        'closing_price' => $last,
+                        'change' => $last - $first,
+                        'transaction' => $year->pluck('transaction')->sum(),
+                    ];
+                });
+            }
         } else {
             $data = $stockCrawler($stock, $year, $month);
+        }
+
+        if ($this->option('json')) {
+            $this->line($data->toJson());
+
+            return 0;
         }
 
         $unit = $this->option('unit');

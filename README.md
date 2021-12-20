@@ -18,12 +18,18 @@ php pastock stock 2330
 php pastock stock 2330 3 2020
 ```
 
-最後，可以用 `--group-year` 來將每一年的股價全部統計起來：
+可以用 `--all` 來取得所有記錄，加 `--group-year` 則是將每一年的股價全部統計起來：
 
 > 因為 API 載資料會很慢，可以用 `-vvv` 來看進度
 
 ```
-php pastock stock 2330 --group-year
+php pastock stock 2330 --all --group-year
+```
+
+使用 `--json` 參數來輸出 json 檔
+
+```
+php pastock stock 2330 --json
 ```
 
 ## ETF 查詢與交集比對功能
