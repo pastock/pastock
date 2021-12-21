@@ -54,7 +54,7 @@ class StockPrice extends Command
             [$code, $name] = array_values($item);
             $this->info("[$key] 下載 {$code} {$name} 的資料 ...", OutputInterface::VERBOSITY_VERBOSE);
 
-            $current = $this->get($code, $name, $this->now->year, $this->now->month, true);
+            $current = $this->get($code, $name, $this->now->year, $this->now->month, true)->reverse();
 
             $cache = Http::get("https://pastock.github.io/stock/{$code}.json");
 
@@ -70,13 +70,12 @@ class StockPrice extends Command
                 });
             }
 
-            $current->reverse()->each(fn($v) => $data->push($v));
+            $data->each(fn($v) => $current->push($v));
 
             $path = $output . '/' . $code . '.json';
 
             $this->info('寫入檔案：' . $path, OutputInterface::VERBOSITY_VERBOSE);
-            File::put($path, $data->toJson());
-
+            File::put($path, $current->toJson());
 
             if ($isNotFound && (0 === $this->limit)) {
                 return false;
