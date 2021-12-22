@@ -22,7 +22,7 @@ class DelaySending
      * @param int $delay
      * @param int $retry
      */
-    public function __construct(Repository $cache, int $delay = 5, int $retry = 2)
+    public function __construct(Repository $cache, int $delay = 7, int $retry = 2)
     {
         $this->cache = $cache;
         $this->delay = $delay;

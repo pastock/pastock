@@ -16,6 +16,7 @@ class StockPrice extends Command
 {
     protected $signature = 'build:stock:price
                                 {stock?*}
+                                {--random : 隨機順序}
                                 {--output=build : 輸出目錄}
                                 {--full-limit=10 : 執行完全下載的次數上限}';
 
@@ -48,18 +49,21 @@ class StockPrice extends Command
             $list = $list->filter(function ($item) use ($stock) {
                 return in_array($item['code'], $stock, true);
             });
+
+            $this->info('限制範圍：' . implode(',', $stock), OutputInterface::VERBOSITY_VERBOSE);
         }
 
-        $list->each(function ($item, $key) use ($price, $output) {
+        if ($this->option('random')) {
+            $list = $list->shuffle();
+        }
+
+        $list->each(function ($item, $key) use ($output) {
             [$code, $name] = array_values($item);
             $this->info("[$key] 下載 {$code} {$name} 的資料 ...", OutputInterface::VERBOSITY_VERBOSE);
 
-            $current = $this->get($code, $name, $this->now->year, $this->now->month, true)->reverse();
-
             $cache = Http::get("https://pastock.github.io/stock/{$code}.json");
 
-            $isNotFound = $cache->status() === 404;
-            if ($isNotFound) {
+            if ($this->limit > 0 && 404 === $cache->status()) {
                 $data = $this->full($code, $name);
 
                 $this->limit--;
@@ -70,18 +74,18 @@ class StockPrice extends Command
                 });
             }
 
+            if ($data->isEmpty()) {
+                return;
+            }
+
+            $current = $this->get($code, $name, $this->now->year, $this->now->month, true)->reverse();
+
             $data->each(fn($v) => $current->push($v));
 
             $path = $output . '/' . $code . '.json';
 
             $this->info('寫入檔案：' . $path, OutputInterface::VERBOSITY_VERBOSE);
             File::put($path, $current->toJson());
-
-            if ($isNotFound && (0 === $this->limit)) {
-                return false;
-            }
-
-            return true;
         });
 
         return 0;
