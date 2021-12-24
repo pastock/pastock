@@ -85,7 +85,7 @@ class StockPrice extends Command
             $path = $output . '/' . $code . '.json';
 
             $this->info('寫入檔案：' . $path, OutputInterface::VERBOSITY_VERBOSE);
-            File::put($path, $current->toJson(JSON_PRETTY_PRINT));
+            File::put($path, $current->values()->toJson(JSON_PRETTY_PRINT));
         });
 
         return 0;
