@@ -70,7 +70,7 @@ class StockPrice extends Command
                 $this->info('剩下 ' . $this->limit . ' 次', OutputInterface::VERBOSITY_VERY_VERBOSE);
             } else {
                 $data = $cache->collect()->reject(function ($item) {
-                    return $item['year'] === $this->now->year && $item['month'] === $this->now->month;
+                    return $item['year'] === ($this->now->year - 1911) && $item['month'] === $this->now->month;
                 });
             }
 
