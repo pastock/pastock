@@ -39,7 +39,7 @@ jobs:
           command: composer install --no-dev
 
       - name: Build stock price
-        run: php pastock build:stock:price -vvv --random --full-limit=5
+        run: php pastock build:stock:price -vvv --random --full-limit=1
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3

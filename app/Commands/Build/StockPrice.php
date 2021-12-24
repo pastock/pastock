@@ -18,7 +18,7 @@ class StockPrice extends Command
                                 {stock?*}
                                 {--random : 隨機順序}
                                 {--output=build : 輸出目錄}
-                                {--full-limit=10 : 執行完全下載的次數上限}';
+                                {--full-limit=1 : 執行完全下載的次數上限}';
 
     protected $description = '建置所有股票的價錢';
 
@@ -85,7 +85,7 @@ class StockPrice extends Command
             $path = $output . '/' . $code . '.json';
 
             $this->info('寫入檔案：' . $path, OutputInterface::VERBOSITY_VERBOSE);
-            File::put($path, $current->toJson());
+            File::put($path, $current->toJson(JSON_PRETTY_PRINT));
         });
 
         return 0;
