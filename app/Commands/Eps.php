@@ -24,7 +24,7 @@ class Eps extends Command
     {
         $stock = $this->argument('stock');
         $unit = $this->option('unit');
-        $target = Carbon::now()->subQuarter();
+        $target = Carbon::now()->subQuarters(2);
 
         $result = $this->getAllEps($eps, $target)
             ->map(function (Collection $record, string $key) use ($stock, $unit) {
@@ -52,15 +52,55 @@ class Eps extends Command
                 return $item;
             });
 
+        $r = $result->reduce(function (array $c, array $value) {
+            if ((int)$value[0] < 2014) {
+                return $c;
+            }
+
+            if (empty($c[(int)$value[1] - 1])) {
+                $c[(int)$value[1] - 1] = array_fill(0, 10, '');
+            }
+
+            $c[(int)$value[1] - 1][$value[0] - 2013] = $value[2];
+
+            return $c;
+        }, array_fill(0, 5, []));
+
+        $r[0][0] = 'Q1';
+        $r[1][0] = 'Q2';
+        $r[2][0] = 'Q3';
+        $r[3][0] = 'Q4';
+        $r[4][0] = '總計';
+
+        for ($i = 1; $i < count($r[0]); $i++) {
+            $r[4][$i] = (float)$r[0][$i] + (float)$r[1][$i] + (float)$r[2][$i] + (float)$r[3][$i];
+        }
+
+        $this->newLine();
+        $this->line('股票代碼：' . $stock);
+
         $this->table([
-            '年度',
-            '季',
-            'EPS',
-            '營業收入',
-            '營業利益',
-            '營業外收入及支出',
-            '稅後淨利',
-        ], $result->toArray(), 'box-double', array_fill(0, 7, (new TableStyle())->setPadType(STR_PAD_LEFT)));
+            '季別/年度',
+            '2014',
+            '2015',
+            '2016',
+            '2017',
+            '2018',
+            '2019',
+            '2020',
+            '2021',
+            '2022',
+        ], $r, 'borderless');
+
+//        $this->table([
+//            '年度',
+//            '季',
+//            'EPS',
+//            '營業收入',
+//            '營業利益',
+//            '營業外收入及支出',
+//            '稅後淨利',
+//        ], $result->toArray(), 'box-double', array_fill(0, 7, (new TableStyle())->setPadType(STR_PAD_LEFT)));
 
         return 0;
     }
