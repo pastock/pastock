@@ -11,6 +11,7 @@ class Eps extends Command
                                 {--take=10 : 0 代表取無限筆}
                                 {--reverse : 反向結果}
                                 {--random : 隨機取樣}
+                                {--trace : 查預設的公司代號}
                                 {--desc : 欄位說明}
                                 ';
 
@@ -24,6 +25,24 @@ class Eps extends Command
             $this->argument('year'),
             $this->argument('quarter'),
         );
+
+        if ($this->option('trace')) {
+            $stocks = config('stock.default');
+
+            $o = array_map(function($stock) use ($result){
+                foreach ($result as $r) {
+                    if ($stock === $r['code']) {
+                        return $r;
+                    }
+                }
+
+                return null;
+            }, $stocks);
+
+            dump($o);
+
+            return 0;
+        }
 
         if ($this->option('random')) {
             $result->random($take)->dump();
