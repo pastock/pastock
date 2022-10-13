@@ -15,6 +15,7 @@ class Sre extends Command
 {
     protected $signature = 'sre {day?} {month?} {year?}
                                 {--take=10}
+                                {--stock=*}
                                 {--chart}';
 
     protected $description = '查詢歷年股利';
@@ -24,6 +25,7 @@ class Sre extends Command
         $day = $this->argument('day');
         $month = $this->argument('month');
         $year = $this->argument('year');
+        $stocks = $this->option('stock');
 
         $now = Carbon::now();
 
@@ -32,6 +34,13 @@ class Sre extends Command
         $year = empty($year) ? $now->year : $year;
 
         $data = $overview($year, $month, $day)
+            ->filter(function ($v) use ($stocks) {
+                if (empty($stocks)) {
+                    return true;
+                }
+
+                return in_array($v[0], $stocks);
+            })
             ->reject(function ($value) {
                 return $value[4] === '-';
             })
@@ -49,7 +58,7 @@ class Sre extends Command
 
                 return $value;
             })
-            ->sortBy(4)
+            ->sortByDesc(4)
             ->take($this->option('take'));
 
         $this->table([
@@ -61,7 +70,7 @@ class Sre extends Command
             '股價淨值比',
             '財報年/季',
             '評價',
-        ], $data->toArray());
+        ], $data->toArray(), 'box');
 
         if ($this->option('chart')) {
             // See http://coopermaa2nd.blogspot.com/2011/01/google-chart-api.html

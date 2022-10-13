@@ -66,6 +66,28 @@ class Eps extends Command
             return $c;
         }, array_fill(0, 5, []));
 
+        foreach ($r as $k => $v) {
+            if ($k === 0) {
+                continue;
+            }
+
+            $v = collect($v)
+                ->map(function ($v2, $k2) use ($r, $k) {
+                    if ($k2 === 0) {
+                        return $v2;
+                    }
+
+                    if (empty($v2)) {
+                        return $v2;
+                    }
+
+                    return $v2 - $r[$k - 1][$k2];
+                })
+                ->toArray();
+
+            $r[$k] = $v;
+        }
+
         $r[0][0] = 'Q1';
         $r[1][0] = 'Q2';
         $r[2][0] = 'Q3';
