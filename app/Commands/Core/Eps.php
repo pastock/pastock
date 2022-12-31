@@ -29,7 +29,7 @@ class Eps extends Command
         if ($this->option('trace')) {
             $stocks = config('stock.default');
 
-            $o = array_map(function($stock) use ($result){
+            $o = array_map(function ($stock) use ($result) {
                 foreach ($result as $r) {
                     if ($stock === $r['code']) {
                         return $r;
@@ -70,5 +70,4 @@ class Eps extends Command
 
         return 0;
     }
-
 }
